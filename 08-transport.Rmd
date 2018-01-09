@@ -12,7 +12,9 @@ library(tidyverse)
 
 ## Introduction
 
+<!-- I would tone down, why should geographic space be more tangible in transport than in remote sensing, location analysis, ecological modeling, etc.? --> 
 In no other sector is geographic space more tangible than transport.
+<!-- I am not 100% sure but I think the first law of geography was the basis for spatial dependence, spatial autocorrelation, and therefore the foundation for spatial interpolation. Not sure how 'moving' relates to this but this just might be because I am not a transportation guy. -->
 It is the effort of moving, particularly between places that are far apart, that led to the 'first law' of geography defined by Waldo Tobler in 1970 as follows [@miller_toblers_2004]: 
 
 > Everything  is related  to  everything  else,  but  near  things  are more  related  than  distant  things
@@ -28,36 +30,41 @@ It is therefore unsurprising that transport researchers have long turned to geoc
 This chapter provides an introduction to geographic analysis of transport systems.
 We will explore how movement patterns can be understood at multiple geographic levels, including:
 
-- **Areal units**: transport can be understood simply in terms of zonal aggregates such as the main mode and average distance of trips made people living in a particular zone.
+<!-- What is the main mode? I don't know the term. -->
+- **Areal units**: transport can be understood simply in terms of zonal aggregates such as the main mode and average distance of trips made by people living in a particular zone.
 - **Desire lines**: straight lines that represent 'origin-destination' data that records how many people travel (or could travel) between places (points or zones) in geographic space.
 - **Routes**: these are circuitous (non-straight) routes, typically representing the 'optimal' path along the route network between origins and destinations along the desire lines defined in the previous bullet point.
-- **Nodes**: these are points in the transport system that can represent common origins and destinations (e.g. with one centroid per zone) and public transport stations such as bus stops and rail stations.
+- **Nodes**: these are points in the transport system that can represent common origins and destinations (e.g., with one centroid per zone) and public transport stations such as bus stops and rail stations.
 - **Route networks**: these represent the system of roads, paths and other linear features in an area. They can be represented as purely geographic entities or as a graph.
+<!-- Not sure but maybe a word is missing, to me values representing 'flow' sounds a bit awkward (but then again I am not a native speaker --> 
 Their features are segments which can be assigned values representing 'flow', the number of people expected to use a particular street or path.
 
 The lowest but hardest-to-model level in transport systems is **agents**, mobile entities like you and me.
-Some models built using software such as [MATSim](http://www.matsim.org/) can effectively capture the dynamics of transport systems using an agent-based modelling (ABM) approach at high spatial and temporal resolution.
+Some models can effectively capture the dynamics of transport systems using an agent-based modelling (ABM) approach at high spatial and temporal resolution, e.g., [MATSim models](http://www.matsim.org/).
+<!-- is that true? More inaccessible than geocomputation or geostats with R? -->
 These tend to be complex and computationally demanding [@horni_multi-agent_2016], meaning they are inaccessible to most people.
-Beyond geographic levels and agents, the basic unit of analysis in most transport models is the **trip**, a single purpose journey from an groin 'A' to a destination 'B' [@hollander_transport_2016].
+Beyond geographic levels and agents, the basic unit of analysis in most transport models is the **trip**, a single purpose journey from an origin 'A' to a destination 'B' [@hollander_transport_2016].
 Trips join-up the different levels of transport systems: they are usually represented as *desire lines* connecting *zone* centroids (*nodes*), they can be allocated onto the *route network* as *routes*, and are made by people who can be represented as *agents*.
 
 Another complication is time.
-Although many trips are regular and predictable --- such as the daily commute to work --- transport systems are dynamic and constantly evolving at many levels of temporal resolution.
+Although many trips are regular and predictable --- such as the daily commute to work --- transport systems are dynamic and constantly evolving over time.
 The purpose of geographic transport modeling can be interpreted as simplifying this complexity in a way that captures the essence of transport problems.
 Selecting an appropriate level of geographic analysis can help simplify this complexity, to capture the essence of a transport system without loosing its most important features and variables [@hollander_transport_2016].
 
-Typically models are designed to solve a particular problem.
+Typically, models are designed to solve a particular problem.
 For this reason this chapter is based around a policy scenario that asks:
 how to increase walking and cycling in the city of Bristol?
+Both policies aim to prevent traffic jams, reduce carbon emissions, and promote a healthier life style all of which makes the city greener and thus more attractive and enjoyable to live in.
 The case study city is a coastal settlement in the West of England, described in the next section.
 
 <!-- Idea: make it about reducing CO2 emissions instead. Thoughts? + Multi-model - more complex -->
 
 ## A case study of Bristol {#bris-case}
 
-The case study used for this chapter is a city on the west of England, around 30 km East of the Welsh capital Cardiff.
-An overview of the region's transport network is illustrated in Figure \@ref(fig:bristol), which shows a diversity of transport infrastructure, for cycling, public transport, and private motor vehicle.
+The case study used for this chapter is located in Bristol - a city in the west of England, around 30 km East of the Welsh capital Cardiff.
+An overview of the region's transport network is illustrated in Figure \@ref(fig:bristol), which shows a diversity of transport infrastructure, for cycling, public transport, and private motor vehicles.
 
+<!-- there should be a legend for the study borders (blue lines) as well. I would also reduce the length of the caption since it is basically repeating the content of the legend. -->
 ```{r, echo=FALSE, eval=FALSE}
 # warning - large script that relies on manually downloaded external data
 source("code/08-transport-data-gen.R") 
@@ -81,11 +88,11 @@ knitr::include_graphics("https://user-images.githubusercontent.com/1825120/34452
 
 Bristol is the 10^th^ largest city council in England, with a population of half a million people, although its travel catchment area is larger (see section \@ref(transport-zones)).
 It has a vibrant economy with aerospace, media, financial service and tourism companies, alongside two major universities.
-Bristol has high average income per capita but contains areas of severe deprivation [@bristol_city_council_deprivation_2015].
+Bristol shows a high average income per capita but also contains areas of severe deprivation [@bristol_city_council_deprivation_2015].
 
 In terms of transport, Bristol is well served by rail and road links, and has a relatively high level of active travel.
-19% of its citizens cycle and 88% walk at least once per month according to the [Active People Survey](https://www.gov.uk/government/statistical-data-sets/how-often-and-time-spent-walking-and-cycling-at-local-authority-level-cw010#table-cw0103) (the national average is 15% and 81% respectively).
-8% of the population reported cycling to work in the 2011 census, compared with only 3% nationwide.
+19% of its citizens cycle and 88% walk at least once per month according to the [Active People Survey](https://www.gov.uk/government/statistical-data-sets/how-often-and-time-spent-walking-and-cycling-at-local-authority-level-cw010#table-cw0103) (the national average is 15% and 81%, respectively).
+8% of the population reported to cycle to work in the 2011 census, compared with only 3% nationwide.
 
 ```{r, eval=FALSE, echo=FALSE}
 if(!require(readODS)) {
@@ -102,9 +109,9 @@ View(cw0103)
 Despite impressive walking and cycling statistics, the city has a major congestion problem.
 Part of the solution is to continue increase the proportion of trips made by cycling.
 Cycling has a greater potential to replace car trips than walking because of the speed of this mode, around 3-4 times faster than walking (with typical [speeds](https://en.wikipedia.org/wiki/Bicycle_performance) of 15-20 km/h vs 4-6 km/h for walking).
-There is therefore a [plan](http://www.cyclingweekly.com/news/interview-bristols-mayor-george-ferguson-24114) to double the mode share of cycling by 2020.
+There is an ambitious [plan](http://www.cyclingweekly.com/news/interview-bristols-mayor-george-ferguson-24114) to double the share of cycling by 2020.
 
-In this policy context the aim of this chapter, beyond demonstrating how geocomputation with R can be used to support sustainable transport planning, is to provide evidence for decision-makers in Bristol to decide how best to increase the mode share of walking and cycling in particular in the city.
+In this policy context the aim of this chapter, beyond demonstrating how geocomputation with R can be used to support sustainable transport planning, is to provide evidence for decision-makers in Bristol to decide how best to increase the share of walking and cycling in particular in the city.
 This high-level aim will be met via the following objectives:
 
 - Describe the geographical pattern of transport behavior in the city.
